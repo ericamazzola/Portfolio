@@ -1,0 +1,134 @@
+/*
+ * Design tokens — single source of truth.
+ * Edit here to update every component that reads these vars.
+ */
+
+:root {
+  /* ── Colours ─────────────────────────────────────────────── */
+  --canvas          : #EFF1C7;   /* light background             */
+  --ink             : #112E12;   /* light foreground             */
+  --accent          : #FF3D00;   /* orange – brand accent        */
+  --canvas-dark     : #112E12;   /* dark background              */
+  --ink-dark        : #EFF1C7;   /* dark foreground              */
+  --faded           : rgba(17, 46, 18, 0.40);
+  --faded-low       : rgba(17, 46, 18, 0.18);  /* highlight text stato iniziale */
+  --line            : rgba(17, 46, 18, 0.10);
+  --color-ink-muted : rgba(17, 46, 18, 0.55);
+  --color-ink-line  : rgba(17, 46, 18, 0.15);
+
+  /* Contact section */
+  --color-contact-bg   : var(--canvas-dark);
+  --color-contact-text : rgba(239, 241, 199, 0.55);
+
+  /* ── Typography ─────────────────────────────────────────── */
+  --font-sans    : 'Manrope', sans-serif;
+  --font-serif   : 'Instrument Serif', serif;
+  --font-display : var(--font-sans);
+  --font-body    : var(--font-sans);
+
+  /* Font sizes */
+  --size-logo       : 1.25rem;
+  --size-nav        : 0.72rem;
+  --size-label      : 0.62rem;
+  --size-hero-name  : clamp(68px, 11vw, 178px);
+  --size-about-body : clamp(0.95rem, 1.2vw, 1.1rem);
+
+  /* Letter spacing */
+  --tracking-logo  : -0.01em;
+  --tracking-nav   :  0.10em;
+  --tracking-label :  0.22em;
+  --tracking-name  : -0.04em;
+
+  /* ── Spacing ────────────────────────────────────────────── */
+  --px          : clamp(1.25rem, 4vw, 3rem);
+  --section-y   : clamp(3rem, 6vw, 5.5rem);
+  --nav-x       : 2.5rem;
+  --nav-y       : 1.75rem;
+  --about-pad-x : 4rem;
+  --about-pad-y : 7rem;
+
+  /* ── Radii ──────────────────────────────────────────────── */
+  --radius-pill : 999px;
+  --radius-btn  : 50%;
+
+  /* ── Transitions ────────────────────────────────────────── */
+  --transition-color    : background-color 0.4s ease, color 0.4s ease;
+  --duration-link       : 0.2s;
+  --duration-dir-hover  : 0.38s;
+  --ease-dir-hover      : cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Image trail ────────────────────────────────────────── */
+  --trail-card-w : 11vw;
+  --trail-ratio  : 3/4;
+}
+
+/* ── Dark mode swap ────────────────────────────────────────── */
+body.dark {
+  --canvas           : #112E12;
+  --ink              : #EFF1C7;
+  --faded            : rgba(239, 241, 199, 0.45);
+  --line             : rgba(239, 241, 199, 0.09);
+  --color-ink-muted  : rgba(239, 241, 199, 0.55);
+  --color-ink-line   : rgba(239, 241, 199, 0.15);
+}
+
+/* ── Base reset ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  overflow-x     : clip;    /* clippa overflow senza BFC — non rompe fixed/sticky */
+  width          : 100%;
+}
+
+body {
+  background-color : var(--canvas);
+  color            : var(--ink);
+  font-family      : var(--font-sans);
+  overflow-x       : clip;
+  width            : 100%;
+  transition       : var(--transition-color);
+}
+
+img { display: block; }
+
+/* Evita overflow orizzontale su tutta la gerarchia root */
+#root { overflow-x: clip; width: 100%; }
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Scrollbar nascosta — 0px evita il gap di layout che si vede sulle sezioni colorate.
+   Lenis gestisce lo smooth scroll; la barra nativa non è necessaria per l'UX. */
+::-webkit-scrollbar { width: 0; height: 0; }
+html { scrollbar-width: none; }          /* Firefox */
+
+/* Focus ring */
+:focus-visible {
+  outline        : 2px solid var(--accent);
+  outline-offset : 3px;
+}
+
+/* ── Scroll reveal ──────────────────────────────────────────── */
+.reveal {
+  opacity   : 0;
+  transform : translateY(20px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* ── Text outline ────────────────────────────────────────────── */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--ink);
+}
+
+/* ── Reduced-motion marquee ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee, .animate-marquee-slow { animation: none !important; }
+}

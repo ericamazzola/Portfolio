@@ -1,0 +1,501 @@
+@import '../styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Layout root — larghezza esplicita su tutta la gerarchia */
+html, body, #root { width: 100%; }
+main, [id="main-content"] { width: 100%; overflow-x: clip; }
+
+/* Clone page-transition: nessun scroll, nessun overflow visivo */
+#page-transition-clone,
+[style*="z-index: 50"][style*="position: fixed"] { overflow: hidden !important; }
+
+/* Ultima regola — sovrascrive Tailwind base e qualsiasi altro stile */
+html, body, *, *::before, *::after { cursor: none !important; }
+
+/* Su touch/mobile: ripristina il cursore di sistema */
+@media (hover: none), (pointer: coarse) {
+  html, body, *, *::before, *::after { cursor: auto !important; }
+
+  /* Feedback tap: arancione al tocco, si resetta alzando il dito */
+  .nav-pill-btn:active                    { background: var(--accent); }
+  .nav-pill-btn:active .dir-btn__label    { color: var(--canvas); }
+  .nav-pill-btn--project:active           { background: var(--ink-dark); }
+  .nav-pill-btn--project:active .dir-btn__label { color: var(--ink); }
+}
+
+/* ════════════════════════════════════════════════════════════
+   COMPONENT CLASSES — usa i token CSS, nessun valore hardcoded
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Directional hover wrapper ─────────────────────────────── */
+.dir-btn {
+  position     : relative;
+  overflow     : hidden;
+  border-radius: var(--radius-pill);
+  display      : inline-block;
+  cursor       : pointer;
+}
+
+/* Cerchio che si espande dal punto di entrata del cursore */
+.dir-btn__fill {
+  position     : absolute;
+  border-radius: 50%;
+  z-index      : 0;
+  will-change  : transform;
+  /* width, height, top, left, transform — tutti impostati via JS */
+}
+
+/* Il link/pulsante dentro il wrapper: background trasparente
+   così il fill sotto è visibile */
+.dir-btn__link {
+  position       : relative;
+  z-index        : 1;
+  display        : inline-block;
+  text-decoration: none;
+  background     : transparent !important;
+}
+
+/* Span di testo — transition colore gestita da JS */
+.dir-btn__label {
+  display   : block;
+  transition: color var(--duration-link) ease;
+}
+
+/* ── Nav pill ───────────────────────────────────────────────── */
+.nav-pill {
+  font-family   : var(--font-body);
+  font-size     : var(--size-nav);
+  letter-spacing: var(--tracking-nav);
+  text-transform: uppercase;
+  padding       : 14px 24px;
+  line-height   : 1.4;
+  white-space   : nowrap;
+}
+
+/* Colori pillola — variante default (light + dark via token swap) */
+.nav-pill-btn {
+  background: var(--ink);
+}
+.nav-pill-btn .dir-btn__fill {
+  background: var(--accent);
+}
+.nav-pill-btn .dir-btn__label {
+  color: var(--canvas);
+}
+
+/* Variante pagine progetto (sfondo arancio) */
+.nav-pill-btn--project {
+  background: var(--accent);
+}
+.nav-pill-btn--project .dir-btn__fill {
+  background: var(--ink-dark);   /* sempre crema */
+}
+.nav-pill-btn--project .dir-btn__label {
+  color: var(--ink-dark);        /* sempre crema */
+}
+
+/* Colore testo su hover — gestito da CSS (non da JS) per non bloccarsi mai */
+.nav-pill-btn:hover .dir-btn__label {
+  color: var(--canvas);          /* crema/scuro secondo il modo — visibile su fill arancio */
+}
+.nav-pill-btn--project:hover .dir-btn__label {
+  color: var(--canvas-dark);     /* sempre verde scuro — visibile su fill crema */
+}
+
+/* ── Nav layout ─────────────────────────────────────────────── */
+#site-nav {
+  position      : fixed;
+  inset         : 0 0 auto;
+  z-index       : 10000; /* sopra il custom cursor (9999) così l'icona resta visibile */
+  display       : flex;
+  align-items   : center;
+  justify-content: space-between;
+  padding       : var(--nav-y) var(--nav-x);
+  background    : transparent;
+  width         : 100%;
+}
+
+.nav-logo a {
+  font-family   : var(--font-display);
+  font-weight   : 400;
+  font-size     : var(--size-logo);
+  letter-spacing: var(--tracking-logo);
+  color         : var(--ink);
+  text-decoration: none;
+  transition    : color var(--duration-link) ease;
+}
+.nav-logo a:hover { color: var(--accent); }
+
+/* Logo su pagine progetto (colore passato via data-attr o CSS var) */
+#site-nav.is-project .nav-logo a {
+  color: var(--nav-logo-color, var(--ink-dark));
+}
+#site-nav.is-project .nav-logo a:hover { color: var(--accent); }
+
+.nav-links {
+  display    : flex;
+  align-items: center;
+  gap        : 2.25rem;
+}
+
+.nav-pills {
+  display   : flex;
+  list-style: none;
+  gap       : 0.5rem;
+  margin    : 0;
+  padding   : 0;
+}
+
+/* Toggle icona luna/sole — stessa altezza delle nav pill */
+.nav-toggle {
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  /* quadrato: lato = altezza pillola = padding-y×2 + line-height×font-size */
+  width          : calc(14px * 2 + var(--size-nav) * 1.4);
+  height         : calc(14px * 2 + var(--size-nav) * 1.4);
+  aspect-ratio   : 1;
+  border-radius  : var(--radius-btn);
+  border         : none;
+  background     : transparent;
+  color          : var(--ink);
+  cursor         : pointer;
+  padding        : 0;
+  flex-shrink    : 0;
+  outline        : none;
+  transition     : color var(--duration-link) ease;
+  position       : relative;
+  z-index        : 0;
+}
+/* L'icona diventa crema quando il cursore arancione copre il bottone */
+.nav-toggle:hover {
+  color: var(--ink-dark);
+}
+
+@keyframes icon-spin {
+  0%   { transform: rotate(0deg)   scale(1); }
+  45%  { transform: rotate(180deg) scale(0.6); }   /* si rimpicciolisce a metà */
+  55%  { transform: rotate(180deg) scale(0.6); }   /* pausa breve per swap icona */
+  100% { transform: rotate(360deg) scale(1); }
+}
+.nav-toggle--spin {
+  animation: icon-spin 0.42s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ── Bottone EM (mobile) ────────────────────────────────────── */
+/* Stesso stile delle pill ma circolare */
+.nav-em-wrap { display: none; }   /* nascosto su desktop */
+
+.nav-em-btn {
+  display        : flex;
+  align-items    : center;
+  font-family    : var(--font-display);
+  font-size      : var(--size-logo);
+  font-weight    : 400;
+  letter-spacing : var(--tracking-logo);
+  text-transform : uppercase;
+  text-decoration: none;
+  color          : var(--ink);
+  background     : none;
+  transition     : color var(--duration-link) ease;
+  line-height    : 1;
+}
+/* Su pagine progetto le pill sono arancioni — EM segue */
+#site-nav.is-project .nav-em-btn { color: var(--accent); }
+
+@media (hover: hover) {
+  .nav-em-btn:hover { color: var(--accent); }
+}
+
+/* ── Mobile nav ─────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  #site-nav {
+    width          : 100%;
+    box-sizing     : border-box;
+    justify-content: center;
+    align-items    : center;
+    gap            : 0;
+    padding        : 1rem;
+  }
+  .nav-logo    { display: none; }
+  .nav-em-wrap { display: none; }
+  .nav-links   {
+    flex-direction: row;
+    align-items   : center;
+    gap           : 0.35rem;
+  }
+  .nav-pills   { flex-wrap: nowrap; gap: 0.35rem; }
+  .nav-toggle  { display: none; }
+}
+
+/* ── Scroll-top button ──────────────────────────────────────── */
+.btn-scroll-top {
+  position      : fixed;
+  bottom        : 2rem;
+  right         : 2.5rem;
+  z-index       : 60;
+  width         : 48px;
+  height        : 48px;
+  border        : none;
+  background    : var(--accent);
+  color         : var(--ink-dark);
+  cursor        : pointer;
+  display       : flex;
+  align-items   : center;
+  justify-content: center;
+  font-family   : var(--font-body);
+  font-size     : 1.1rem;
+  border-radius : 50%;
+  transition    : background var(--duration-link) ease;
+}
+.btn-scroll-top:hover { background: var(--ink); color: var(--canvas); }
+
+@media (max-width: 640px) {
+  .btn-scroll-top { bottom: 1rem; right: 1rem; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CONTACT LINE (auto-fit font-size via JS)
+   ════════════════════════════════════════════════════════════ */
+.contact-line {
+  font-family   : var(--font-display);
+  font-weight   : 400;
+  letter-spacing: -0.04em;
+  line-height   : 0.9;
+  color         : var(--color-contact-text);
+  white-space   : nowrap;
+  width         : 100%;
+}
+.contact-line__gap  { display: inline-block; width: 0.35em; }
+.contact-line__link {
+  color          : var(--color-contact-text);
+  text-decoration: none;
+  transition     : color var(--duration-link) ease;
+}
+.contact-line__link:hover { color: var(--accent); }
+
+/* ════════════════════════════════════════════════════════════
+   HIGHLIGHT TEXT (GSAP scroll-driven color)
+   ════════════════════════════════════════════════════════════ */
+.hl-text {
+  font-family   : var(--font-display);
+  font-weight   : 400;
+  font-size     : clamp(44px, 7vw, 120px);
+  line-height   : 1.1;
+  letter-spacing: -0.03em;
+  color         : rgba(17,46,18,0.35);
+  text-wrap     : balance;
+}
+.hl-text__line   { display: block; font-weight: 400; line-height: 1.05; }
+.hl-word         { color: var(--faded-low); display: inline-block; will-change: color; }
+.hl-word--serif  {
+  font-family: var(--font-serif);
+  font-style : italic;
+  font-size  : 1.18em;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SCROLL HINT
+   ════════════════════════════════════════════════════════════ */
+@keyframes scroll-hint-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(-8px); }
+}
+.scroll-hint {
+  position      : absolute;
+  bottom        : 2.5rem;
+  left          : 50%;
+  transform     : translateX(-50%);
+  color         : var(--ink);
+  user-select   : none;
+  pointer-events: none;
+  z-index       : 30;
+  animation     : scroll-hint-bounce 2s ease-in-out infinite;
+  font-family   : var(--font-body);
+  font-size     : var(--size-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  white-space   : nowrap;
+}
+
+/* ════════════════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════════════════ */
+.hero {
+  position  : relative;
+  width     : 100%;
+  height    : 100vh;
+  background: var(--canvas);
+  overflow  : hidden;
+}
+.hero__text {
+  position       : absolute;
+  inset          : 0;
+  display        : flex;
+  flex-direction : column;
+  align-items    : center;
+  justify-content: center;
+  text-align     : center;
+  z-index        : 30;
+  pointer-events : none;
+  user-select    : none;
+}
+.hero__title {
+  font-family   : var(--font-display);
+  font-size     : var(--size-hero-name);
+  line-height   : 0.88;
+  letter-spacing: var(--tracking-name);
+  color         : var(--ink);
+  text-transform: lowercase;
+  font-weight   : 400;
+}
+.hero__title-row   { display: block; font-weight: 400; }
+.hero__title-serif {
+  font-family   : var(--font-serif);
+  font-style    : italic;
+  font-weight   : 400;
+  letter-spacing: -0.01em;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ABOUT + CONTACT
+   ════════════════════════════════════════════════════════════ */
+.about {
+  display       : flex;
+  flex-direction: column;
+  width         : 100%;
+}
+.about__blob {
+  position  : relative;
+  overflow  : hidden;
+  min-height: 100vh;
+}
+.about__blob-bg {
+  position : absolute;
+  inset    : 0;
+  z-index  : 0;
+  background:
+    radial-gradient(ellipse at 15% 20%, #6aaa5e 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 75%, #9abe5a 0%, transparent 55%),
+    radial-gradient(ellipse at 55% 45%, #c8d870 0%, transparent 55%),
+    radial-gradient(ellipse at 30% 80%, #7ab864 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 15%, #b0d060 0%, transparent 45%),
+    #EFF1C7;
+  filter   : blur(55px);
+  transform: scale(1.25);
+}
+.about__blob-content {
+  position       : relative;
+  z-index        : 1;
+  padding        : var(--about-pad-y) var(--about-pad-x);
+  display        : flex;
+  flex-direction : column;
+  justify-content: center;
+  min-height     : 100vh;
+}
+.contact {
+  background    : var(--color-contact-bg);
+  min-height    : 60vh;
+  overflow      : hidden;
+  padding       : var(--about-pad-y) var(--about-pad-x);
+  display       : flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap           : 4rem;
+  width         : 100%;
+}
+.contact__links {
+  display       : flex;
+  flex-direction: column;
+  gap           : 1.5rem;
+}
+.contact__footer {
+  display        : flex;
+  justify-content: space-between;
+  align-items    : flex-end;
+  padding-top    : 2rem;
+  border-top     : 1px solid rgba(239,241,199,0.15);
+}
+.contact__meta {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size  : var(--size-about-body);
+  color      : var(--color-contact-text);
+  line-height: 1.6;
+}
+
+/* ════════════════════════════════════════════════════════════
+   WORK
+   ════════════════════════════════════════════════════════════ */
+.work {
+  position  : relative;
+  width     : 100%;
+  height    : 100vh;
+  overflow  : hidden;
+  transition: background 0.4s ease;
+  cursor    : none;
+}
+.work__center {
+  position       : absolute;
+  inset          : 0;
+  z-index        : 20;
+  display        : flex;
+  flex-direction : column;
+  align-items    : center;
+  justify-content: center;
+}
+.work__list {
+  list-style : none;
+  text-align : center;
+  margin     : 0;
+  padding    : 0;
+  line-height: 1.18;
+}
+.work__item {
+  display       : block;          /* era <li>, ora è <a> → serve block */
+  text-decoration: none;
+  font-family   : var(--font-display);
+  font-style    : normal;
+  font-weight   : 400;
+  font-size     : clamp(28px, 5vw, 72px);
+  letter-spacing: -0.025em;
+  padding       : 0.1em 0;
+  cursor        : pointer;
+  user-select   : none;
+  color         : var(--ink);
+  transition    : color 0.22s ease, font-family 0s;
+}
+.work__item:hover,
+.work__item[data-active="true"] {
+  color: var(--accent);
+}
+.work__cat {
+  font-family   : var(--font-body);
+  font-size     : var(--size-label);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color         : var(--ink);
+  margin-top    : 2rem;
+  min-height    : 1.2em;
+  transition    : opacity 0.28s ease, transform 0.28s ease;
+}
+.work__cursor {
+  position      : absolute;
+  z-index       : 10;
+  pointer-events: none;
+  width         : 320px;
+  border-radius : 4px;
+  overflow      : hidden;
+  transform-origin: top left;
+  opacity  : 0;
+  transform: scale(0.82);
+  transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.work__cursor--visible {
+  opacity  : 1;
+  transform: scale(1);
+}
+
